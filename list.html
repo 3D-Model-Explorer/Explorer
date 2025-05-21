@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="favicon.png">
+  <title>3D Models | Explorer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
+
+    :root {
+      --primary-bg: #0a0a12;
+      --glass-bg: rgba(30, 30, 50, 0.3);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-primary: rgba(255, 255, 255, 0.9);
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --accent-blue: #4d8eff;
+      --accent-purple: #9d7aff;
+      --accent-teal: #4dd1ff;
+      --accent-pink: #ff7ad8;
+      --popup-bg: rgba(10, 10, 18, 0.95);
+      --help-bg: rgba(40, 40, 60, 0.95);
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      margin: 0;
+      padding: 2rem 0;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .search-box {
+      margin-bottom: 30px;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 24px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 8px var(--accent-blue);
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 85%;
+      max-width: 900px;
+    }
+
+    .option {
+      position: relative;
+      border-radius: 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      padding: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      box-sizing: border-box;
+      transition: all 0.4s ease;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .option-title {
+      font-size: 1.4rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .option-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .option:nth-child(4n+1) .option-title {
+      background: linear-gradient(90deg, var(--accent-blue), #a2c8ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .option:nth-child(4n+2) .option-title {
+      background: linear-gradient(90deg, var(--accent-purple), #d0b8ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .option:nth-child(4n+3) .option-title {
+      background: linear-gradient(90deg, var(--accent-teal), #a8e6ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .option:nth-child(4n+4) .option-title {
+      background: linear-gradient(90deg, var(--accent-pink), #ffb8e8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .option img {
+      width: 30px;
+      height: 30px;
+      margin-left: 20px;
+      flex-shrink: 0;
+    }
+
+    .option-content {
+      flex: 1;
+    }
+
+    @media (max-width: 600px) {
+      .option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .option img {
+        margin: 10px 0 0 auto;
+      }
+    }
+
+a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  position: relative;
+  padding-left: 20px; /* space for arrow */
+}
+
+a::before {
+  content: '➤';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: arrowIn 1s infinite ease-in-out;
+  color: white;
+}
+
+@keyframes arrowIn {
+  0%   { left: -10px; opacity: 0; }
+  50%  { left: 0px; opacity: 1; }
+  100% { left: -10px; opacity: 0; }
+}
+
+
+/* Stack buttons vertically */
+.button-column {
+  position: fixed;
+  top: 100px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.button-column button {
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background-color: #007BFF;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+.button-column button:hover {
+  background-color: #0056b3;
+}
+
+
+
+.search-box {
+  position: sticky;
+  top: 0;
+  padding: 10px;
+  z-index: 1000; /* stays above other elements */
+}
+
+      :host {
+        all: initial;
+        position: fixed;
+        top: 120px;
+        left: 120px;
+        width: 600px;
+        height: 400px;
+        background: #fff;
+        border: 2px solid #333;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        z-index: 999999;
+        resize: both;
+        overflow: hidden;
+        display: none;
+      }
+
+      .header {
+        background: #222;
+        color: #fff;
+        padding: 10px;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+        user-select: none;
+      }
+
+      .title {
+        font-weight: bold;
+      }
+
+      .close {
+        background: crimson;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      iframe {
+        width: 100%;
+        height: calc(100% - 40px);
+        border: none;
+      }
+
+      const createPopup = (url) => {
+    if (document.getElementById("iframe-popup-wrapper")) {
+      document.getElementById("iframe-popup-wrapper").remove();
+    }
+
+    // Create popup iframe wrapper
+    const wrapper = document.createElement("div");
+    wrapper.id = "iframe-popup-wrapper";
+    wrapper.style.position = "fixed";
+    wrapper.style.left = "100px";
+    wrapper.style.top = "100px";
+    wrapper.style.width = "700px";
+    wrapper.style.height = "500px";
+    wrapper.style.zIndex = 999999;
+    wrapper.style.border = "2px solid black";
+    wrapper.style.borderRadius = "8px";
+    wrapper.style.boxShadow = "0 0 20px rgba(0,0,0,0.5)";
+    wrapper.style.overflow = "hidden";
+    wrapper.style.resize = "both";
+    wrapper.style.background = "#fff";
+
+    // Create real iframe inside wrapper
+    const popupIframe = document.createElement("iframe");
+    popupIframe.srcdoc = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            margin: 0;
+            font-family: sans-serif;
+            overflow: hidden;
+          }
+          .header {
+            background: #222;
+            color: white;
+            padding: 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+          }
+          .close-btn {
+            background: crimson;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+          }
+          iframe {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+          }
+  </style>
+</head>
+<body>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Search 3D Models...">
+  </div>
+
+  <div class="container" id="options-container">
+
+    <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/8576f795be454cbe89a6e8d0d7eb62dc/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2020 Dodge Challenger</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/4fad9badee2449b9a5addadc11c3f4e1/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2021 Ram 1500</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/d471ea8c6235457b8e131842e2cf3783/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">DJI FPV Drone</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/707342c93db7411bb29c077d3ef2b147/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Aston Martin Vulcan</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+
+    <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/c37bec0353a94f90a3acbe09ceb3aecf/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Ford Everest Sport 2020</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/2c8aadc8d0ea4ec180f758cd1361254b/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2023 Lexus GX 550</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/02f8ce411fc844299c2873c71f51411f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2024 Lexus GX 550</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/52296f1a65d54a85a2ed7cb67604e554/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2020 Mercedes-Benz G-Class AMG G63</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+        <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/0e65ec130ac0417da97212b4a7b48ab7/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Nissan 370z Nismo</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/4bb3ebbb88b04ab6bbb1b95f2aa1c176/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2023 BMW M2 Coupe</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/5664218111d345c6b79c64ae48c6dd8b/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">BMW X7 M60i</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/a1ee29b80c844b13ba56ac7e28971a53/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2024 Hyundai Santa Fe</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+        <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/8d16325eb7974a948627b3cd77f30f52/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2024 Hyundai Ioniq 5</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/8546ca7c2cb14c45bd6acc11e16c8f7e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2010 Lamborghini Reventon Roadster</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/47d11b3a7c0848d3b0c43fc085a5438d/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Tesla Cybertruck</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/8546ca7c2cb14c45bd6acc11e16c8f7e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2010 Lamborghini Reventon</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+        <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/18dacab980224752ac72e2b67fbdbbe8/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">BMW M4 Adro</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/0763ec4a816f4025a3986d9ef552069f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Lamborghini Sian</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/861a20e07d8d46208c9e5fa244c254d2/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Sci-fi Weapon</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/de045bf2f3b141a48a4248885d3fee1c/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Dodge RAM TRX Sandblast Edition</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/17c0fd84d10149a09c3c4186877c4096/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2023 Audi e-Tron Sportback</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/259fc16c23d548ba8d5802c563d8ebdc/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Police SUV Vehicle</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/47ce3eac47524efc85363cca7513751a/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2019 Ford Ranger Police Rabtor</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/4186d2f8c86d45b58a2d7753de9f4aba/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Toyota Camry</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/d14e0aa64fd446fc87226a90b61af01d/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2012 Mercedes-Benz Ener-G-Force</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/f8024595e11c48119877c9c7cc554abc/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Jeep Grand Cherokee Trackhawk</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/3c00056ec42b4552804fe5f4e5af768f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Police Car SUV</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/06fc55dd9c4748dcb332305600a9fe8e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Mercedes-Benz EQS 450+</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/802ae7f8c8c6418a933340a27f838dde/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Mersedes Benz Maybach GlS 600</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/06fc55dd9c4748dcb332305600a9fe8e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Mercedes-Benz EQS 450+</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/25f3058e7ac94e56a775d9d5f68905ca/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Porshe Taycan Turbo GT</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/04ae6d8e07e84f55a9e1d7e3261be171/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">2014 Audi RS5 Coupe</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/2a877fdf866b4dbb8b0aa4dd9ef2319d/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Nissan Navara 2021</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/c91be6b992b04b4e89ef23ba68e54a7f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Military Vehicle</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/e93ac097ee9a46a4a9decca9aceed03c/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Ford Ranger Sport 2023</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/891ee120d3734b439a9a5e63eaa10a4c/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Scania S730 Semitruck</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/45311f1c3626462784cd84ec40a82f4b/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Leopard 2 MBT Revolution</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/82b053ba8f5e41d4b35414cab5f1f3e5/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Excavator</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/1e3318a6b47f4f089c4d6e824c6553f8/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Helicopter</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/e9f23bab3bd14f34ba9e54ccd082f46d/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">USS Nimitz class aircraft carrier</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/71b9c67448164fdeb5740ad6b3e1fa69/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">USS Oliver Hazard Perry FFG-7</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/0df0587d0b0045358205d77c24d890de/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Italian Aircraft Carrier</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/0b328ae51d934bfb8b2ad8afd15510f6/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Convenience Store</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/cf72d0a46c354d159cec1394be5b5d41/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Griechischer Tempele</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/a923596f7c834518b83c897f583c50ba/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Rocket Launching Station</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/1a109bdd906149249dce0a18cdfbe708/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">S-400 Triumf SAM system</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/8527eb9084e244baa1325ff1c3d51491/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">STRELA 10</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/6a32352b302848508774583a58659211/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Russian Pantsir-S1</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+        
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/05422a53305843828f8150e37a645fe9/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Russian GAZ TIGR</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/bd966c06e2a24aaaaf0ec2f8a9c6d9d5/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Pantsir-S1</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/758055e673b543bd9ec3f504c8d60e8b/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">96K6 Pantsir-S2</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/3c45810c6a0c453c80bcf4b126abc493/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">McDonnell Douglas KC-10 Extender</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/7c9813a7ba594fc8b466b5d1d65c06e4/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">EADS/Northrop Grumman KC-45</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/6a32352b302848508774583a58659211/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Russian Pantsir-S1</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/758055e673b543bd9ec3f504c8d60e8b/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">96K6 Pantsir-S2</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/51ab7e74bac347a89725f1d22b928edf/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Rural Buildings Set</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/89b1b3f200c84d5a990ae95c0e302848/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Futuristic Spaceship</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/7824f6b1e0ca4f2f81f6c86dec7eb8de/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Su-27</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/ec06a0fefc3c44489aafbe9ed129b97d/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Sukhoi SU-35 Fighter Jet</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/27f61ca204944810895609a061b9643f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">City Simulator</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/10a16c96ca8b4ebc855915f5d5202046/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">General Dynamics M1A2 Abrams Main Battle Tank</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/cdac73e931f6482e86960a326fef73bf/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Boeing CH-47 Chinook Military Transport Aircraft</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/cf00a682505f479a903e9600cce051f7/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Bell Boeing V-22 Osprey Military Helicopter</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/c3b58008c46b45048fdd7dd283a3c8c8/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Boeing AH-64D Apache Combat Helicopter</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/0e4d8553a9314787a5207b3da2e79b98/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Kaiser PMC Military Robot</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/dc88bfc47861426e8132b7b8d5174b48/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Soldier</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/342501b0c84843a3a418319c31ea26fa/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Low Poly Character Tactical</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/d1696f00902d431aa2a2e569b80bf69e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Tekken force soldier</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/6c53691fa07e46aca890c771940b3651/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">SciFi Soldier Character</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/ea2b996c62024746adb892b2faf08223/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Sci-Fi Officer with Gun</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/88220551ef284e69a96327a11c29502c/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Army Character</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/7a64d0af78514a159877edab1ab2bccb/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">MIM-104 Patriot Surface-To-Air Missile</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/392a9149a8af42df95ac7f7e96eb0acf/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">C-18A Skylord Military Transport Aircraft</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/452aec166dd54f03b1183291b182a712/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Titan Armored Vehicle Launcher Bridge</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/95e1e402426f4ddcb543af7a0455cf05/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">MIM-104 Patriot Air Defense System</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/1ad95e5724624a3bba7d36a686817efc/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Renault TRM Radar Truck</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+      
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/7d14267918e7441b92ccc9f77869cb37/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">TYPE-10 Main Battle Tank</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/ef1b453c53fe4f709c781262fafa8a3e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Battle-Armour Sonar Titan</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/bd92ab179d7f42fda65f49e77adf21a7/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Omega knight</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/68f373e944de41b3ba0a53287dab65f6/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Titán cameraman acurate</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+        
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/3ebaa8bc75c34a538f4dd28e33eda119/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Perst 4 Laser Sight Attachment</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/d1a488b627e846ec8378ee426a670441/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">ZENITCO VZOR-4 red dot sight</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/175d21157f3e4983ae3547170b8e2e0f/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Battle Armor Sonar Titan</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/e3078aea1a4e4dc0a5dd81d03bb44440/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">AI Controlled Robot</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+        
+            <!-- CARD TEMPLATE (4 unique x 2 times = 8 cards) -->
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/96bec8f7ad1148da93088caed426e1eb/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Mech Toad</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/b1fbfcf60b844da283e64ee7efe20cee/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Iron Man Mark 44 Hulkbuster</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/d6b97e705edb4b98a3cdb3856ccfe2d2/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Iron Man</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+    <div class="option"><div class="option-content"><h3 class="option-title"><a href="https://sketchfab.com/models/fe84a7cfc72749c78b65e44fca64713e/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0">Robot Dog</a></h3><p class="option-text"></p></div><img src="favicon.png" alt="icon"></div>
+  </div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* Basic reset */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+
+  /* Button container */
+  .button-column {
+    display: flex;
+    gap: 12px;
+  }
+
+  button {
+    cursor: pointer;
+    padding: 10px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+
+  /* Popup overlay (covers full screen) */
+.popup {
+  display: none; /* hide by default */
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  /* do NOT put display:flex here */
+}
+
+
+  /* Popup content box */
+.popup-content {
+  background: white;
+  color: black;
+  border-radius: 12px;
+  padding: 25px 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Help popup bigger and near top */
+#popupHelp .popup-content {
+  max-width: 600px;
+  max-height: 80vh;
+  margin-top: 40px;
+  align-self: flex-start;
+}
+
+/* Thick and futuristic scrollbars for all scrollable areas */
+::-webkit-scrollbar {
+  width: 14px;     /* thick vertical scrollbar */
+  height: 10px;    /* short horizontal scrollbar */
+  background: transparent;
+}
+
+/* Track (background behind thumb) */
+::-webkit-scrollbar-track {
+  background: rgba(0, 123, 255, 0.1); /* faint blue transparent */
+  border-radius: 10px;
+}
+
+/* Scrollbar thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border-radius: 10px;
+  box-shadow:
+    0 0 8px #00c6ff,
+    0 0 15px #0072ff;
+  transition: background 0.3s ease;
+}
+
+/* Hover effect for thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
+  box-shadow:
+    0 0 12px #0072ff,
+    0 0 20px #00c6ff;
+}
+
+/* Specific for popup-content to keep same style but narrower height */
+.popup-content::-webkit-scrollbar {
+  width: 14px;
+  height: 10px;
+}
+
+
+
+  /* Close button */
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s;
+    user-select: none;
+  }
+  .close-btn:hover {
+    color: #000;
+  }
+
+  /* Headings inside popup */
+  .popup-content h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+
+  /* For keyboard key style */
+  kbd {
+    background-color: #333;
+    color: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: monospace;
+    box-shadow: inset 0 -1px 0 #000;
+  }
+</style>
+</head>
+<body>
+
+<!-- Buttons -->
+<div class="button-column">
+  <button onclick="openPopup('popup1')">ℹ️ About</button>
+  <button onclick="openPopup('popup2')">🚀 Play HexGL</button>
+  <button onclick="openPopup('sketchfab')">🌐 Visit <a href="https://sketchfab.com/feed">Sketchfab</a></button>
+  <button onclick="openPopup('popupHelp')">❓ Help</button>
+</div>
+
+<!-- Popups -->
+<div id="popup1" class="popup" onclick="outsideClick(event, 'popup1')">
+  <div class="popup-content" onclick="event.stopPropagation()">
+    <span class="close-btn" onclick="closePopup('popup1')">&times;</span>
+    <h2>ℹ️ About</h2>
+    <p>👋 Hi there! This awesome page was created by <strong>Mohammed Yousef</strong> to show how cool 3D modeling can be! 🧊🚀</p>
+    <p>🖼️ Some of the 3D models come from Sketchfab and are used under special licenses — kind of like borrowing cool toys to show your friends!</p>
+    <p>🧠 What is 3D modeling? It's like making shapes on the computer that look real! You can spin them, zoom in, and look at them from every side.</p>
+    <p>It's a fun way to build cars, spaceships, characters, and anything you can dream of — all using digital clay! 🪐🎨💻</p>
+  </div>
+</div>
+
+<div id="popupHelp" class="popup" onclick="outsideClick(event, 'popupHelp')">
+  <div class="popup-content" onclick="event.stopPropagation()">
+    <span class="close-btn" onclick="closePopup('popupHelp')">&times;</span>
+    <h2>❓ Help</h2>
+    <h3>🚀✨ Welcome to the Awesome 3D Model Explorer! ✨🚀</h3>
+    <p>🎉 Ready to explore some super cool 3D models? Just pick one from the magic list on the left! It’ll appear like magic in the big viewer — and guess what? You can spin it, zoom it, and move it around like a real 3D master! 🧙‍♂️🧠</p>
+    <h4>🎮 How to Move Your Model Around</h4>
+    <p>Use your mouse or trackpad to control the model like a pro! Here's how:</p>
+    <ul>
+      <li><strong>🔄 Spin it Around (Rotate):</strong> Click and drag with your mouse to spin the model and check it out from every direction — even from the top and bottom!</li>
+      <li><strong>🔍 Zoom In and Out:</strong> Roll your mouse wheel or slide on your trackpad to zoom super close or zoom out to see the whole thing.</li>
+      <li><strong>🧲 Move Around (Pan):</strong> Hold down <kbd>Shift</kbd> and drag the mouse to slide the model around the screen like it’s floating in space! 🌌</li>
+    </ul>
+    <p>💡 Tip: Try zooming in to look at tiny details or spinning fast to see every side — it’s like holding the real thing in your hands!</p>
+    <p>Have fun exploring and becoming a 3D adventurer! 🧭🌍</p>
+  </div>
+</div>
+
+<div id="popup2" class="popup" onclick="outsideClick(event, 'popup2')">
+  <div class="popup-content" onclick="event.stopPropagation()">
+    <span class="close-btn" onclick="closePopup('popup2')">&times;</span>
+    <h2>🚀 Play HexGL</h2>
+    <p>🏁 HexGL is a super-fast space racing game where you zoom through futuristic tracks in a flying ship! It's like a race in outer space! 🌌✨</p>
+    <p>🛣️ The racetracks are special 3D models — like giant roller coasters made on the computer! You can twist, turn, and race through them in every direction!</p>
+    <p>🚀 Your spaceship is also a 3D model! It’s like a digital toy you can steer with your keyboard, and it looks real because of all the cool details!</p>
+    <p>🧊 3D modeling means we build shapes that pop out and look real — like video game magic! HexGL uses these models to make the game fun and exciting!</p>
+  
+  
+  <html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .container-eg-btn-3 {
+  font-family: sans-serif;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  flex-wrap: wrap;
+  margin: 0 auto 10px;
+  padding: .5em;
+  line-height: normal;
+}
+.container-eg-btn-3 .button {
+  margin: 20px;
+  padding: 12px 15px;
+  text-align: center;
+  text-transform: uppercase;
+  position: relative;
+  transition: .3s;
+  z-index: 1;
+  background: #3aaeff;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.container-eg-btn-3 .button-1:hover {
+    box-shadow: 0 0.6em 0.5em -0.4em #fa4343;
+    transform: translateY(-0.25em);
+    background: #fa4343;
+}
+.container-eg-btn-3 .button-2:hover{
+    background: rgb(255 0 102);
+    box-shadow: rgba(255, 0, 102, 0.4) 4px 4px, rgba(255, 0, 102, 0.3) 8px 8px, rgba(255, 0, 102, 0.2) 12px 12px, rgba(255, 0, 102, 0.1) 16px 16px, rgba(255, 0, 102, 0.05) 20px 20px;
+}
+.container-eg-btn-3 .button-3:hover{
+    background: rgb(129 0 255);
+    box-shadow: rgba(129, 0, 255, 0.4) 0px 4px, rgba(129, 0, 255, 0.3) 0px 8px, rgba(129, 0, 255, 0.2) 0px 12px, rgba(129, 0, 255, 0.1) 0px 16px, rgba(129, 0, 255, 0.05) 0px 20px;
+}
+.container-eg-btn-3 .button-4:hover{
+    background: #0000ff;
+    box-shadow: rgb(255, 255, 255) 6px -6px 0px -3px, rgb(24 200 20) 6px -6px, rgb(255, 255, 255) 12px -12px 0px -3px, rgb(255, 217, 19) 12px -12px, rgb(255, 255, 255) 18px -18px 0px -3px, rgb(255 166 63) 18px -18px, rgb(255, 255, 255) 24px -24px 0px -3px, rgb(255 51 51) 24px -24px;
+}
+.container-eg-btn-3 .button-5:hover {
+    box-shadow: rgb(24 200 20) -4px 4px, rgb(255 217 19) -8px 8px, rgb(255 166 63) -12px 12px, rgb(255 51 51) -16px 16px;
+    background: #0000ff;
+}
+.container-eg-btn-3 .button-6:hover{
+    background: #0000ff;
+    box-shadow: #0000ff 0px 0px 0px 3px, rgb(24 200 20) 0px 0px 0px 6px, rgb(255 217 19) 0px 0px 0px 9px, rgb(255 166 63) 0px 0px 0px 12px, rgb(255 51 51) 0px 0px 0px 15px;
+}
+.container-eg-btn-3 .button-7:before {
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+    content: "";
+    top: 100%;
+    left: 5%;
+    height: 10px;
+    width: 90%;
+    opacity: 0;
+    background: radial-gradient(ellipse at center, #000 0%, rgb(99 103 203 / 0%) 80%);
+    transition-duration: 0.3s;
+    transition-property: transform opacity;
+}
+.container-eg-btn-3 .button-7:hover{
+    background: #000;
+    transform: translateY(-5px);    
+}
+.container-eg-btn-3 .button-7:hover:before{
+    opacity: 1;
+    transform: translateY(5px);
+}
+
+.container-eg-btn-3 .button-8:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 6px;
+}
+.container-eg-btn-3 .button-8:hover:before, .container-eg-btn-3 .button-8:hover:after {
+    opacity: 1;
+}
+.container-eg-btn-3 .button-8:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    left: 0;
+    top: 0;
+    border-radius: 6px;
+    opacity: 0;
+}
+.container-eg-btn-3 .button-8:active:after {
+    background: transparent;
+}
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+
+
+
+  </style>
+<body>
+<div class="container-eg-btn-3">
+<div class="button button-7" onclick="window.location.href='https://hexgl.bkcore.com/play/'">🚀 Play HexGL</div>
+</div>
+</body>
+</html>
+  </div>
+</div>
+
+<script>
+  // Open popup by ID
+  function openPopup(id) {
+    closeAllPopups(); // close any open popup first
+    const popup = document.getElementById(id);
+    if (popup) {
+      popup.style.display = 'flex';
+      // Adjust max-height to avoid scroll if possible
+      // Let the popup size adapt naturally, limited by max-width/height CSS
+    }
+  }
+
+  // Close popup by ID
+  function closePopup(id) {
+    const popup = document.getElementById(id);
+    if (popup) {
+      popup.style.display = 'none';
+    }
+  }
+
+  // Close all popups
+  function closeAllPopups() {
+    document.querySelectorAll('.popup').forEach(popup => {
+      popup.style.display = 'none';
+    });
+  }
+
+  // Close popup if clicking outside content
+  function outsideClick(event, popupId) {
+    if (event.target.id === popupId) {
+      closePopup(popupId);
+    }
+  }
+  
+  window.onload = function() {
+  document.querySelectorAll('.popup').forEach(popup => {
+    popup.style.display = 'none';
+  });
+};
+
+</script>
+
+</body>
+</html>
+
+
+
+  <!-- Game Frame -->
+</div>
+
+<!-- 📜 Script to Handle Popup Dragging and Boundaries -->
+<script>
+function openPopup(id) {
+  closeAllPopups();
+  const popup = document.getElementById(id);
+  popup.style.display = 'block';
+}
+
+function closePopup(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function closeAllPopups() {
+  document.querySelectorAll('.popup').forEach(p => p.style.display = 'none');
+}
+
+// Make popup draggable
+dragElement(document.getElementById("hexglPopup"), document.getElementById("hexglHeader"));
+
+function dragElement(popup, header) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  header.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+
+    let newTop = popup.offsetTop - pos2;
+    let newLeft = popup.offsetLeft - pos1;
+
+    // Keep within screen
+    const maxTop = window.innerHeight - popup.offsetHeight;
+    const maxLeft = window.innerWidth - popup.offsetWidth;
+
+    if (newTop < 0) newTop = 0;
+    if (newLeft < 0) newLeft = 0;
+    if (newTop > maxTop) newTop = maxTop;
+    if (newLeft > maxLeft) newLeft = maxLeft;
+
+    popup.style.top = newTop + "px";
+    popup.style.left = newLeft + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+</script>
+  </div>
+</div>
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+
+<!-- Footer -->
+<footer class="futuristic-footer">
+  <div class="footer-content">
+    <p>© 2025 Mohammed Yousef. All rights reserved.</p>
+    <p>3D Models powered by <a href="https://sketchfab.com" target="_blank">Sketchfab</a>.</p>
+  </div>
+</footer>
+
+<style>
+  .futuristic-footer {
+    width: 100%;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    color: #00f5ff;
+    text-align: center;
+    padding: 20px 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 -2px 10px rgba(0, 255, 255, 0.3);
+    border-top: 2px solid #00f5ff;
+  }
+
+  .futuristic-footer a {
+    color: #00f5ff;
+    text-decoration: underline;
+    font-weight: bold;
+  }
+
+  .futuristic-footer a:hover {
+    color: #fff;
+  }
+
+  .footer-content {
+    max-width: 1000px;
+    margin: auto;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div id="popup" class="popup" style="display:none;">
+    <div class="popup-header" id="popup-header">
+      <button id="close-popup" aria-label="Close popup">&times;</button>
+    </div>
+    <iframe id="popup-iframe" src="" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
+
+
+<h2>Popup Links</h2>
+<a href="https://example.com">Example</a>
+<a href="https://openai.com">OpenAI</a>
+<a href="https://wikipedia.org">Wikipedia</a>
+
+<script>
+  function createPopup(url) {
+    const existing = document.getElementById("popup-wrapper");
+    if (existing) existing.remove();
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "popup-wrapper";
+    Object.assign(wrapper.style, {
+      position: "fixed",
+      left: "20%",
+      top: "15%",
+      width: "60%",
+      height: "60%",
+      background: "#fff",
+      border: "2px solid #000",
+      borderRadius: "10px",
+      resize: "both",
+      overflow: "hidden",
+      boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+      zIndex: 9999,
+    });
+
+    const iframe = document.createElement("iframe");
+    iframe.src = url;
+    Object.assign(iframe.style, {
+      width: "100%",
+      height: "calc(100% - 40px)",
+      border: "none",
+    });
+
+    const header = document.createElement("div");
+    header.id = "popup-header";
+    Object.assign(header.style, {
+      background: "#111",
+      color: "#fff",
+      height: "40px",
+      padding: "5px 10px",
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      cursor: "grab",
+      userSelect: "none",
+    });
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "X";
+    Object.assign(closeBtn.style, {
+      background: "crimson",
+      color: "#fff",
+      border: "none",
+      borderRadius: "5px",
+      padding: "5px 10px",
+      cursor: "pointer",
+    });
+    closeBtn.onclick = () => wrapper.remove();
+
+    header.appendChild(closeBtn);
+    wrapper.appendChild(header);
+    wrapper.appendChild(iframe);
+    document.body.appendChild(wrapper);
+
+    // Smooth dragging
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    header.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return; // left click only
+      isDragging = true;
+      const rect = wrapper.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      document.body.style.userSelect = "none";
+      header.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        wrapper.style.left = `${e.clientX - offsetX}px`;
+        wrapper.style.top = `${e.clientY - offsetY}px`;
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+      document.body.style.userSelect = "";
+      header.style.cursor = "grab";
+    });
+  }
+
+  document.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      createPopup(link.href);
+    });
+  });
+</script>
+
+
+
+
+
+</body>
+</html>

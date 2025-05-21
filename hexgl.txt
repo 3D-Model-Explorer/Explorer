@@ -1,0 +1,134 @@
+<!-- HexGL Info Button -->
+<button onclick="openPopup('hexglPopup')" style="margin-top:10px;">🚀 Play HexGL</button>
+
+<!-- HexGL Info Popup -->
+<div id="hexglPopup" class="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+background:#fff; border:2px solid #000; border-radius:12px; padding:20px; max-width:450px; z-index:9999; box-shadow:0 5px 15px rgba(0,0,0,0.3); font-family:'Comic Sans MS', cursive;">
+
+  <h2 style="margin-top:0;">🚀 Welcome to HexGL!</h2>
+
+  <p>
+    🏁 HexGL is a super-fast space racing game where you zoom through futuristic tracks in a flying ship! It's like a race in outer space! 🌌✨
+  </p>
+
+  <p>
+    🛣️ The racetracks are special 3D models — like giant roller coasters made on the computer! You can twist, turn, and race through them in every direction!
+  </p>
+
+  <p>
+    🚀 Your spaceship is also a 3D model! It’s like a digital toy you can steer with your keyboard, and it looks real because of all the cool details!
+  </p>
+
+  <p>
+    🧊 3D modeling means we build shapes that pop out and look real — like video game magic! HexGL uses these models to make the game fun and exciting!
+  </p>
+
+
+  <!-- 🚀 Play HexGL Button -->
+<button onclick="openPopup('hexglPopup')" style="margin:10px; padding:10px 16px; font-size:16px; font-weight:bold;">
+  🚀 Play HexGL
+</button>
+
+<!-- 🪐 HexGL Popup -->
+<div id="hexglPopup" class="popup" style="
+  display: none;
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background: #fff;
+  border: 3px solid #1e90ff;
+  border-radius: 12px;
+  z-index: 9999;
+  resize: both;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+">
+  <!-- Drag Header -->
+  <div id="hexglHeader" style="
+    background: #1e90ff;
+    color: white;
+    padding: 8px 12px;
+    cursor: move;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  ">
+    🚀 HexGL Racing Game
+    <button onclick="closePopup('hexglPopup')" style="
+      float: right;
+      background: red;
+      color: white;
+      border: none;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    ">X</button>
+  </div>
+
+  <!-- Game Frame -->
+  <iframe src="HexGL/hexgl.html" style="width:100%; height:calc(100% - 40px); border:none;"></iframe>
+</div>
+
+<!-- 📜 Script to Handle Popup Dragging and Boundaries -->
+<script>
+function openPopup(id) {
+  closeAllPopups();
+  const popup = document.getElementById(id);
+  popup.style.display = 'block';
+}
+
+function closePopup(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function closeAllPopups() {
+  document.querySelectorAll('.popup').forEach(p => p.style.display = 'none');
+}
+
+// Make popup draggable
+dragElement(document.getElementById("hexglPopup"), document.getElementById("hexglHeader"));
+
+function dragElement(popup, header) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  header.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+
+    let newTop = popup.offsetTop - pos2;
+    let newLeft = popup.offsetLeft - pos1;
+
+    // Keep within screen
+    const maxTop = window.innerHeight - popup.offsetHeight;
+    const maxLeft = window.innerWidth - popup.offsetWidth;
+
+    if (newTop < 0) newTop = 0;
+    if (newLeft < 0) newLeft = 0;
+    if (newTop > maxTop) newTop = maxTop;
+    if (newLeft > maxLeft) newLeft = maxLeft;
+
+    popup.style.top = newTop + "px";
+    popup.style.left = newLeft + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+</script>

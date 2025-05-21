@@ -1,0 +1,21 @@
+<!-- About Button -->
+<button onclick="openPopup('aboutPopup')">ℹ️ About</button>
+
+<!-- About Popup -->
+<div id="aboutPopup" class="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+background:#fff; border:2px solid #000; border-radius:10px; padding:20px; max-width:400px; z-index:9999; box-shadow:0 4px 10px rgba(0,0,0,0.3);">
+  <h2 style="margin-top:0;">ℹ️ About This Page</h2>
+  <p>
+    👋 Hi there! This awesome page was created by <strong>Mohammed Yousef</strong> to show how cool 3D modeling can be! 🧊🚀
+  </p>
+  <p>
+    🖼️ Some of the 3D models come from Sketchfab and are used under special licenses — kind of like borrowing cool toys to show your friends!
+  </p>
+  <p>
+    🧠 What is 3D modeling? It's like making shapes on the computer that look real! You can spin them, zoom in, and look at them from every side.
+  </p>
+  <p>
+    It's a fun way to build cars, spaceships, characters, and anything you can dream of — all using digital clay! 🪐🎨💻
+  </p>
+  <button onclick="closePopup('aboutPopup')" style="margin-top:10px; padding:6px 12px; font-weight:bold;">❌ Close</button>
+</div>
